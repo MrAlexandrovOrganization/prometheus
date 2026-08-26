@@ -1,7 +1,7 @@
 networks:
-  monitoring-net:
+  prometheus-net:
     external: true
-    name: monitoring-net
+    name: prometheus-net
 
 services:
   prometheus:
@@ -17,7 +17,7 @@ services:
     ports:
       - "127.0.0.1:9090:9090"
     networks:
-      - monitoring-net
+      - prometheus-net
     extends:
       file: docker-compose.base.yml
       service: base
