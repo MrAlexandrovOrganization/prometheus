@@ -1,0 +1,31 @@
+networks:
+  monitoring-net:
+    external: true
+    name: monitoring-net
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.4.0
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${MONITORING_DATA_DIR}/prometheus-targets:/etc/prometheus/targets:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - monitoring-net
+    extends:
+      file: docker-compose.base.yml
+      service: base
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+volumes:
+  prometheus_data:
+    name: observability_prometheus_data
