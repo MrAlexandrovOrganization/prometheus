@@ -8,7 +8,7 @@ networks:
 
 services:
   prometheus:
-    image: prom/prometheus:v3.4.0
+    image: prom/prometheus:${PROMETHEUS_VERSION:?Run via make}
     restart: unless-stopped
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'

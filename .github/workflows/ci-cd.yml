@@ -15,7 +15,7 @@ jobs:
       - name: Validate docker-compose
         run: |
           export MONITORING_DATA_DIR=/tmp/monitoring
-          docker compose config -q
+          make config-check
 
   deploy:
     name: Deploy to VM

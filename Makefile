@@ -4,6 +4,7 @@ NET = prometheus-net
 
 -include .env
 export
+include versions.mk
 
 up: init
 	$(DOCKER_COMPOSE) up -d
@@ -27,3 +28,9 @@ logs:
 	$(DOCKER_COMPOSE) logs -f
 
 .PHONY: up down logs init network directories
+
+.PHONY: versions config-check
+versions:
+	@$(foreach v,$(VERSION_VARS),printf '%s=%s\n' '$(v)' '$($(v))';)
+config-check:
+	$(DOCKER_COMPOSE) --env-file /dev/null config --quiet --no-env-resolution
