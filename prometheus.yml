@@ -2,19 +2,6 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
-scrape_configs:
-  - job_name: 'caddy'
-    static_configs:
-      - targets: ['caddy-metrics:9180']
-        labels:
-          service: caddy
-  - job_name: 'services'
-    honor_labels: true
-    file_sd_configs:
-      - files:
-          - '/etc/prometheus/targets/*.yml'
-        refresh_interval: 30s
-
-  - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['cadvisor:8080']
+# Each host scrapes locally with Alloy and forwards through its persistent WAL.
+# Do not scrape the same series here as well: one writer owns each host's data.
+scrape_configs: []

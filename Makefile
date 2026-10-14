@@ -4,12 +4,12 @@ NET = prometheus-net
 
 -include .env
 export
-include versions.mk
+include makefiles/versions.mk
 
 up: init
 	$(DOCKER_COMPOSE) up -d
 
-init: network directories
+init: network
 
 network:
 	@if $(DOCKER) network inspect $(NET) >/dev/null 2>&1; then \
@@ -34,3 +34,7 @@ versions:
 	@$(foreach v,$(VERSION_VARS),printf '%s=%s\n' '$(v)' '$($(v))';)
 config-check:
 	$(DOCKER_COMPOSE) --env-file /dev/null config --quiet --no-env-resolution
+	$(DOCKER) run --rm --network none --entrypoint sh -i prom/prometheus:$(PROMETHEUS_VERSION) -c 'cat > /tmp/prometheus.yml; promtool check config /tmp/prometheus.yml' < prometheus.yml
+
+.PHONY: check
+check: config-check

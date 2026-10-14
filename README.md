@@ -1,6 +1,6 @@
 # Prometheus
 
-Версия образа задаётся в `versions.mk`; `make versions` показывает её.
+Версия образа задаётся в `makefiles/versions.mk`; `make versions` показывает её.
 Make экспортирует значение в Compose. CI вызывает `make config-check`.
 
 - `make config-check` — валидация Compose; задайте тестовый `MONITORING_DATA_DIR`.
@@ -9,16 +9,19 @@ Make экспортирует значение в Compose. CI вызывает `
 При проверках используйте синтетические настройки и checkout без `.env`.
 Запускайте Compose через Make, чтобы не дублировать версию образа.
 
-## Caddy
+## Центральное хранилище на WSL
 
-Job `caddy` опрашивает `caddy-metrics:9180/metrics` каждые 15 секунд через
-отдельную внутреннюю external-сеть `caddy-metrics-net`, которой владеет Compose
-`infra/network/caddy`. Перед первым запуском Prometheus должен быть поднят Caddy.
-Приложения не используют эту сеть для ingress. Caddy не подключён к общей
-`prometheus-net`. Порт метрик не опубликован на VM, Caddy admin API остаётся локальным.
+Prometheus принимает remote write от Alloy каждого хоста на `/api/v1/write`.
+Сборщики сами опрашивают локальные exporters и файлы `prometheus-targets`,
+сохраняя неподтверждённые метрики в WAL до 24 часов. Центр не дублирует scrape.
+Хранение явно ограничено 15 днями. Порт 9090 опубликован только на loopback;
+удалённым сборщикам он доступен через Tailscale Serve, без публичного ingress.
 
-Проверка: `up{job="caddy"}`; HTTP-коды есть на
-`caddy_http_request_duration_seconds_count`, задержки — на соответствующей
-гистограмме. Запросы проверены также через datasource proxy Grafana.
-Изменение prometheus.yml валидировать `promtool check config`, затем применять
-SIGHUP к Prometheus. Изменения Compose-сетей должны быть применены отдельно.
+Перед переносом остановить старый Prometheus и скопировать весь named volume,
+включая WAL и head chunks, в новый volume с тем же именем. Старый volume сохранить
+для отката. Включать новый экземпляр только после завершения копирования.
+
+После переезда автоматический SSH deploy по прежним VM secrets отключён:
+`DEPLOY_ENABLED` должен быть явно включён только для правильного целевого хоста.
+При миграции изменения доставляются Git после CI и применяются явно через Make,
+чтобы прежний workflow не запустил второй центр на server.

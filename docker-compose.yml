@@ -1,7 +1,4 @@
 networks:
-  caddy-metrics-net:
-    external: true
-    name: caddy-metrics-net
   prometheus-net:
     external: true
     name: prometheus-net
@@ -13,22 +10,23 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-remote-write-receiver'
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ${MONITORING_DATA_DIR}/prometheus-targets:/etc/prometheus/targets:ro
       - prometheus_data:/prometheus
     ports:
       - "127.0.0.1:9090:9090"
     networks:
       - prometheus-net
-      - caddy-metrics-net
     extends:
       file: docker-compose.base.yml
       service: base
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 1g
+          cpus: "0.5"
 
 volumes:
   prometheus_data:

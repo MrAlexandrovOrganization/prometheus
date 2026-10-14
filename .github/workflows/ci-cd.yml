@@ -15,13 +15,13 @@ jobs:
       - name: Validate docker-compose
         run: |
           export MONITORING_DATA_DIR=/tmp/monitoring
-          make config-check
+          make check
 
   deploy:
     name: Deploy to VM
     runs-on: ubuntu-24.04
     needs: validate
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
