@@ -37,4 +37,6 @@ config-check:
 	$(DOCKER) run --rm --network none --entrypoint sh -i prom/prometheus:$(PROMETHEUS_VERSION) -c 'cat > /tmp/prometheus.yml; promtool check config /tmp/prometheus.yml' < prometheus.yml
 
 .PHONY: check
-check: config-check
+check: config-check test
+
+include makefiles/ci-deploy.mk

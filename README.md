@@ -21,7 +21,17 @@ Prometheus принимает remote write от Alloy каждого хоста 
 включая WAL и head chunks, в новый volume с тем же именем. Старый volume сохранить
 для отката. Включать новый экземпляр только после завершения копирования.
 
-После переезда автоматический SSH deploy по прежним VM secrets отключён:
-`DEPLOY_ENABLED` должен быть явно включён только для правильного целевого хоста.
-При миграции изменения доставляются Git после CI и применяются явно через Make,
-чтобы прежний workflow не запустил второй центр на server.
+
+## Автодеплой
+
+После проверок push в `main` доставляет точный проверенный SHA на WSL через
+SSH jump host Hostkey Russia. `make ci-deploy` запускает транспорт; `make deploy`
+пересоздаёт сервис и выполняет `make smoke`. PR только проверяются. Ручной запуск
+workflow доступен для main. `DEPLOY_ENABLED` управляет включением доставки.
+Ключ репозитория ограничен этим проектом; `DEPLOY_SSH_KEY` хранится в Secrets,
+проверенные SSH host keys — в переменной `DEPLOY_KNOWN_HOSTS`. Старые `VM_*`
+secrets не используются. `.env` и named volumes остаются на хосте.
+
+Доступ/установка receiver, блокировки, отказы и повторный запуск описаны в
+[инструкции доставки Alloy](https://github.com/MrAlexandrovOrganization/alloy/blob/main/DEPLOY.md).
+Для тестов использовать `make test`; `make check` также валидирует конфигурацию.
