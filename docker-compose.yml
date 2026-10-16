@@ -5,6 +5,7 @@ networks:
 
 services:
   prometheus:
+    container_name: "${CONTAINER_NAME_PREFIX:-}prometheus"
     image: prom/prometheus:${PROMETHEUS_VERSION:?Run via make}
     restart: unless-stopped
     command:
