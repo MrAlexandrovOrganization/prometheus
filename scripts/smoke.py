@@ -2,6 +2,7 @@
 """Check the running central service without printing response bodies."""
 import json
 from pathlib import Path
+import re
 import time
 import urllib.request
 
@@ -14,7 +15,16 @@ for attempt in range(24):
         with urllib.request.urlopen(endpoint, timeout=5) as response:
             body = response.read(4096)
             if response.status == 200 and (project != "grafana" or json.loads(body).get("database") == "ok"):
-                print(project + " readiness verified")
+                if project == "prometheus":
+                    with urllib.request.urlopen("http://127.0.0.1:9090/api/v1/status/config", timeout=5) as config_response:
+                        config = json.load(config_response)["data"]["yaml"]
+                    if not re.search(r"out_of_order_time_window: (26h|1d2h)\s", config):
+                        raise ValueError("Expected 26h delayed-sample window")
+                    with urllib.request.urlopen("http://127.0.0.1:9090/api/v1/status/flags", timeout=5) as flags_response:
+                        flags = json.load(flags_response)["data"]
+                    if flags["storage.tsdb.retention.time"] != "15d":
+                        raise ValueError("Expected 15d retention")
+                print(project + " readiness and configured storage policy verified")
                 break
     except (OSError, ValueError):
         pass

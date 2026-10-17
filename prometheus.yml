@@ -2,6 +2,11 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
-# Each host scrapes locally with Alloy and forwards through its persistent WAL.
+# Each host scrapes with Alloy and forwards through local vmagent's disk queue.
 # Do not scrape the same series here as well: one writer owns each host's data.
 scrape_configs: []
+
+# Accept a day of buffered data even while other hosts advance the head.
+storage:
+  tsdb:
+    out_of_order_time_window: 26h
