@@ -9,7 +9,12 @@ include makefiles/versions.mk
 up: init
 	$(DOCKER_COMPOSE) up -d
 
-init: network
+init: network config-permissions
+
+# The restricted SSH receiver uses umask 077. Only this public tracked config
+# must be readable by the container's nobody user; private .env stays untouched.
+config-permissions:
+	chmod 0644 prometheus.yml
 
 network:
 	@if $(DOCKER) network inspect $(NET) >/dev/null 2>&1; then \
@@ -27,7 +32,7 @@ down:
 logs:
 	$(DOCKER_COMPOSE) logs -f
 
-.PHONY: up down logs init network directories
+.PHONY: up down logs init network directories config-permissions
 
 .PHONY: versions config-check
 versions:
