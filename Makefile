@@ -1,4 +1,6 @@
-DOCKER_COMPOSE = docker compose
+DOCKER_COMPOSE_BASE = docker compose --project-directory "$(CURDIR)"
+include makefiles/compose.mk
+DOCKER_COMPOSE = docker compose --project-directory "$(CURDIR)" $(COMPOSE_FLAGS)
 DOCKER ?= docker
 NET = prometheus-net
 
@@ -45,3 +47,10 @@ config-check:
 check: config-check test
 
 include makefiles/ci-deploy.mk
+
+# Read-only validation of every tracked Compose combination, without runtime secrets.
+.PHONY: compose-layout-check
+compose-layout-check:
+	$(DOCKER_COMPOSE_BASE) --env-file /dev/null -f compose/docker-compose.yml --profile '*' config --no-interpolate --no-env-resolution --quiet
+
+check: compose-layout-check
