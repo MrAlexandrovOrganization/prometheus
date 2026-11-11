@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "service": "prometheus",
+  "components": [
+    "prometheus/*"
+  ],
+  "logs": [],
+  "assets": []
+}
